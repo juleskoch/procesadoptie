@@ -5,7 +5,11 @@ try{notes=JSON.parse(localStorage.getItem('procesadoptie-notes-v1')||'{}')}catch
 const outcomes=['Nog niet besproken','Begrepen en onderschreven','Nader uitwerken','Bespreken of besluiten'];
 const noteCount=()=>Object.values(notes).filter(n=>n.status!=='Nog niet besproken'||n.text).length;
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),3200)}
-function saveNotes(){try{localStorage.setItem('procesadoptie-notes-v1',JSON.stringify(notes));$('#note-count').textContent=noteCount();return true}catch{toast('Opslaan op dit apparaat is niet gelukt. Exporteer je gesprekslijst.');return false}}
+function saveNotes(sync=true){
+ if(sync)queueMicrotask(()=>window.dispatchEvent(new Event('procesadoptie:notes-changed')));
+ try{localStorage.setItem('procesadoptie-notes-v1',JSON.stringify(notes));$('#note-count').textContent=noteCount();return true}
+ catch{toast('Opslaan op dit apparaat is niet gelukt. Exporteer je gesprekslijst.');return false}
+}
 const source=()=>'';
 const openBtn=(name,label,cls='arrow-button')=>`<button class="${cls}" data-open="${name}">${label}<span class="arrow" aria-hidden="true">↗</span></button>`;
 const chain=items=>`<ol class="chain">${items.map((x,i)=>`<li><span class="num">${i+1}</span><div><h3>${x[0]}</h3><p>${x[1]}</p></div></li>`).join('')}</ol>`;
